@@ -3,6 +3,7 @@
  * gcc -o comma comma.c csvparser/parsefuncs.c errors/errorfuncs.c -I.
  *
  * TODO:
+ * - Throw error for unknown nickname
  * - Throw error if nickname starts with -
  * - Git functionality
  * - Clean up code
@@ -10,6 +11,10 @@
  * - AUR
  * - ??????
  * - Profit
+ *
+ * FIXME:
+ * - Unknown nickname causes Seg. fault
+ * - Tmp file not getting deleted sometimes
  *
  * WARNING: This code is only partially functional
  *
@@ -105,8 +110,11 @@ int main(int argc, char *argv[])
     }
 
     //Load
-    if (strcmp(argv[1],"-l") == 0 && argc == 5)
+    if (strcmp(argv[1],"-l") == 0)
     {
+	if(argc != 5)
+	    argerr();
+
 	char* newobj = malloc(22 + strlen(argv[2]) + strlen(argv[3]) + strlen(argv[4]));
 	strcpy(newobj, argv[2]);
 	strcat(newobj, ",");
@@ -115,15 +123,18 @@ int main(int argc, char *argv[])
 	strcat(newobj, argv[4]);
 	strcat(newobj, "\n");
 	FILE* objfile = fopen("objects.csv", "a");
-	fprintf(objfile, newobj);
+	fprintf(objfile, "%s", newobj);
 	printf("Created new object: %s", newobj);
 
 	free(newobj);
     }
 
     //Unload
-    else if (strcmp(argv[1],"-u") == 0 && argc == 3)
+    else if (strcmp(argv[1],"-u") == 0)
     {
+	if(argc != 3)
+	    argerr();
+
 	FILE* fileread = fopen("objects.csv", "r");
 	FILE* tmpfilewrite = fopen("tmpobjects.csv", "w");
 	char * line = NULL;
@@ -162,7 +173,7 @@ int main(int argc, char *argv[])
 		printf("Match for: %s, line: %s\n", delobj, linecheck);
 	    }
 	    else {
-		fprintf(tmpfilewrite, line);
+		fprintf(tmpfilewrite, "%s", line);
 	    }
 	}
 
@@ -210,10 +221,10 @@ int main(int argc, char *argv[])
 	    }
 
 	}
-	if (strcmp(editpath,"") == 0)
-	{
+
+	if (editpath == NULL)
 	    argerr();
-	}
+
 	strtok(ceditor, "\n");
 	char* command = (char *) malloc(2 + strlen(ceditor)+ strlen(editpath) );
 	strcpy(command, ceditor);
