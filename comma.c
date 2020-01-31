@@ -1,11 +1,34 @@
+/* COnfiguration Micro MAnager (comma) writen by Theo Henson
+ *
+ * gcc -o comma comma.c csvparser/parsefuncs.c errors/errorfuncs.c -I.
+ *
+ * TODO:
+ * - Throw error if nickname starts with -
+ * - Git functionality
+ * - Clean up code
+ * - Makefile
+ * - AUR
+ * - ??????
+ * - Profit
+ *
+ * WARNING: This code is only partially functional
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "csvparser/parse.h"
+#include "errors/error.h"
+
+char* dir;
 
 int main(int argc, char *argv[])
 {
-    //Reading configuration file
+    dir = malloc(sizeof(getenv("HOME")) + 13);
+    strcpy(dir, getenv("HOME"));
+    strcat(dir, ".config/comma/");
+
     FILE* constream = fopen("config.csv", "r");
     char conline[1024];
     char* ceditor;
@@ -128,8 +151,7 @@ int main(int argc, char *argv[])
 	}
 
 	if(!match) {
-	    fprintf(stderr, "Invalid object\n");
-	    return(1);
+	    argerr();
 	}
 	
 	while((read = getline(&line, &len, fileread)) != -1) {
@@ -171,8 +193,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-	    fprintf(stderr, "ERROR: Git not enabled\n");
-	    return(1);
+	    giterr();
 	}
     }
 
@@ -191,8 +212,7 @@ int main(int argc, char *argv[])
 	}
 	if (strcmp(editpath,"") == 0)
 	{
-	    fprintf(stderr, "ERROR: Invalid arguments\n");
-	    return(1);
+	    argerr();
 	}
 	strtok(ceditor, "\n");
 	char* command = (char *) malloc(2 + strlen(ceditor)+ strlen(editpath) );
@@ -205,7 +225,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-	fprintf(stderr, "ERROR: Invalid arguments\n");
-	return(1);
+	argerr();
     }
+    free(dir);
 }
