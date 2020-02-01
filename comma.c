@@ -14,7 +14,6 @@
  *
  * FIXME:
  * - Unknown nickname causes Seg. fault
- * - Tmp file not getting deleted sometimes
  *
  * WARNING: This code is only partially functional
  *
@@ -136,14 +135,13 @@ int main(int argc, char *argv[])
 	    argerr();
 
 	FILE* fileread = fopen("objects.csv", "r");
-	FILE* tmpfilewrite = fopen("tmpobjects.csv", "w");
-	char * line = NULL;
+	char* line = NULL;
 	size_t len = 0;
 	ssize_t read;
 	int match = 0;
 
 	if (fileread == NULL)
-	    exit(EXIT_FAILURE);
+	    fileerr();
 	
 	char* delobj;
 
@@ -161,9 +159,11 @@ int main(int argc, char *argv[])
 	    }
 	}
 
-	if(!match) {
-	    argerr();
-	}
+	if(!match)
+	    objerr();
+	
+
+	FILE* tmpfilewrite = fopen("tmpobjects.csv", "w");
 	
 	while((read = getline(&line, &len, fileread)) != -1) {
 	    char* linecheck = malloc(strlen(line) - 1);

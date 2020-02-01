@@ -13,3 +13,15 @@ void giterr() {
     free(dir);
     exit(1);
 }
+
+void fileerr() {
+    fprintf(stderr, "ERROR: File error (most likely not found)\n");
+    free(dir);
+    exit(1);
+}
+
+void objerr() {
+    fprintf(stderr, "ERROR: Object error (most likely not found)\n");
+    free(dir);
+    exit(1);
+}
