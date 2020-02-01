@@ -8,8 +8,8 @@ void argerr() {
     exit(1);
 }
 
-void giterr() {
-    fprintf(stderr, "ERROR: Git not enabled\n");
+void direrr() {
+    fprintf(stderr, "ERROR: Directory error (most likely not found)\n");
     free(dir);
     exit(1);
 }

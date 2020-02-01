@@ -1,5 +1,5 @@
 extern char* dir;
 void argerr();
-void giterr();
+void direrr();
 void fileerr();
 void objerr();

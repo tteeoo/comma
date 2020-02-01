@@ -4,6 +4,7 @@
  *
  * TODO:
  * - Git functionality
+ * - Read from ~/.config/
  * - Clean up code
  * - Makefile
  * - AUR
@@ -15,9 +16,11 @@
  */
 
 #include <stdio.h>
+#include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
 #include "csvparser/parse.h"
+#include "dirtools/dir.h"
 #include "errors/error.h"
 
 char* dir;
@@ -31,7 +34,7 @@ int main(int argc, char *argv[])
     FILE* constream = fopen("config.csv", "r");
     char conline[1024];
     char* ceditor;
-    char* cgit;
+    char* cdir;
     char* crepo;
     while (fgets(conline, 1024, constream))
     {
@@ -45,9 +48,9 @@ int main(int argc, char *argv[])
 	{
 	    ceditor = val;
 	}
-	if (!strcmp(prop,"git"))
+	if (!strcmp(prop,"dir"))
 	{
-	    cgit = val;
+	    cdir = val;
 	}
 	if (!strcmp(prop,"repo"))
 	{
@@ -189,17 +192,37 @@ int main(int argc, char *argv[])
 	    free(line);
     }
 
-    //Git
-    else if (strcmp(argv[1],"-g") == 0)
+    //Dir
+    else if (strcmp(argv[1],"-d") == 0)
     {
-	strtok(cgit, "\n");
-	if (strcmp(cgit,"true") == 0)
+	if (argc != 3 || (strcmp(argv[2], "pull") != 0 && strcmp(argv[2], "push") != 0))
+	    argerr();
+
+	strtok(cdir, "\n");
+
+	//Push
+	if (strcmp(argv[2], "push") == 0)
 	{
-	    printf("Git is enabled\n");
+	    printf("Push\n");
 	}
+	
+	//Pull
 	else
 	{
-	    giterr();
+	    printf("Pull\n");
+	    struct dirent *de;
+  
+	    DIR *dr = opendir(cdir); 
+  
+	    if (dr == NULL)
+		direrr();
+  
+	    while ((de = readdir(dr)) != NULL) 
+		printf("%s\n", de->d_name); 
+  
+	    closedir(dr);
+	    if(strinarr("f", objs[0]))
+		printf("q");
 	}
     }
 
