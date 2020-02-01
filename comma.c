@@ -3,17 +3,12 @@
  * gcc -o comma comma.c csvparser/parsefuncs.c errors/errorfuncs.c -I.
  *
  * TODO:
- * - Throw error for unknown nickname
- * - Throw error if nickname starts with -
  * - Git functionality
  * - Clean up code
  * - Makefile
  * - AUR
  * - ??????
  * - Profit
- *
- * FIXME:
- * - Unknown nickname causes Seg. fault
  *
  * WARNING: This code is only partially functional
  *
@@ -211,7 +206,7 @@ int main(int argc, char *argv[])
     //Edit
     else if (argc == 2)
     {
-	char* editpath;
+	char* editpath = NULL;
 	for (int line = 0; line < objidx; line++)
 	{
 	    strtok(objs[line][2], "\n");
@@ -223,7 +218,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (editpath == NULL)
-	    argerr();
+	    objerr();
 
 	strtok(ceditor, "\n");
 	char* command = (char *) malloc(2 + strlen(ceditor)+ strlen(editpath) );
