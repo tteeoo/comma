@@ -1,4 +1,4 @@
-# COnfiguration Micro MAnager (comma)
+# *CO*nfiguration *M*icro *MA*nager (comma)
 
 WIP. A niche tool for managing configuration files, specifically geared towards minimal linux installations.
 
