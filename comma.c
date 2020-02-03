@@ -3,70 +3,96 @@
  * gcc -o comma comma.c csvparser/parsefuncs.c errors/errorfuncs.c -I.
  *
  * TODO:
- * - Git functionality
- * - Read from ~/.config/
- * - Clean up code
+ * - Remove categories
+ * - Toggle color
+ * - Help option
  * - Makefile
  * - AUR
  * - ??????
  * - Profit
  *
- * WARNING: This code is only partially functional
- *
  */
 
 #include <stdio.h>
-#include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "csvparser/parse.h"
-#include "dirtools/dir.h"
 #include "errors/error.h"
 
 char* dir;
+char* confname;
+char* objname;
+char* tmpname;
 
-int main(int argc, char *argv[])
-{
-    dir = malloc(sizeof(getenv("HOME")) + 13);
+int main(int argc, char *argv[]) {
+    //Initialize dir variable and file names
+    dir = calloc(sizeof(getenv("HOME")) + 17, 1);
     strcpy(dir, getenv("HOME"));
-    strcat(dir, ".config/comma/");
+    strcat(dir, "/.config/comma/");
 
-    FILE* constream = fopen("config.csv", "r");
+    confname = calloc(sizeof(dir) + 20, 1);
+    strcpy(confname, dir);
+    strcat(confname, "config.csv");
+
+    objname = calloc(sizeof(dir) + 20, 1);
+    strcpy(objname, dir);
+    strcat(objname, "objects.csv");
+
+    tmpname = calloc(23, 1);
+    strcpy(tmpname, "/tmp/comma_objects.csv");
+
+    //Check if files exist and handle if not
+    DIR* checkdir = opendir(dir);
+    if(!checkdir) {
+	mkdir(dir, 0700);
+	closedir(checkdir);
+    }
+    if(access(confname, F_OK) == -1) {
+	FILE* newconf = fopen(confname, "w");
+	fprintf(newconf, "editor,vi\ncolor,true\n");
+	fclose(newconf);
+	printf("No config file detected, created new one (%s)\nThe default editor is currently vi, edit the config file to change it.\n", confname);
+    }
+    if(access(objname, F_OK) == -1) {
+	FILE* newobj = fopen(objname, "w");
+	fprintf(newobj, "~/.config/comma/config.csv,comma,c\n");
+	fclose(newobj);
+    }
+
+    //Read config file
+    FILE* constream = fopen(confname, "r");
     char conline[1024];
     char* ceditor;
-    char* cdir;
-    char* crepo;
-    while (fgets(conline, 1024, constream))
-    {
+    char* color;
+
+    while(fgets(conline, 1024, constream)) {
         char* tmp = strdup(conline);
 	char* prop = getfield(tmp, 1);
 	tmp = strdup(conline);
 	char* val = getfield(tmp, 2);
 	tmp = strdup(conline);
 
-	if (!strcmp(prop,"editor"))
-	{
+	if(!strcmp(prop, "editor")) {
 	    ceditor = val;
 	}
-	if (!strcmp(prop,"dir"))
-	{
-	    cdir = val;
-	}
-	if (!strcmp(prop,"repo"))
-	{
-	    crepo = val;
+	if(!strcmp(prop, "color")) {
+	    color = val;
 	}
 
 	free(tmp);
     }
+    fclose(constream);
 
-    //Reading object file
-    FILE* objstream = fopen("objects.csv", "r");
-    char* objs[linecount("objects.csv")][3];
+    //Read object file
+    FILE* objstream = fopen(objname, "r");
+    char* objs[linecount(objname)][3];
     char objline[1024];
     int objidx = 0;
-    while (fgets(objline, 1024, objstream))
-    {
+    while(fgets(objline, 1024, objstream)) {
         char* tmp = strdup(objline);
 	char* path = getfield(tmp, 1);
 	tmp = strdup(objline);
@@ -82,33 +108,28 @@ int main(int argc, char *argv[])
         free(tmp);
 	objidx++;
     }
+    fclose(objstream);
 
     //List (No arguments specified)
-    if (argc == 1)
-    {
+    if(argc == 1) {
 	printf("%-25s%-25s%s", "Path", "Category",  "Nickname\n");
-	for(int line = 0; line < objidx; line++)
-	{
-	    for(int type = 0; type < 3; type++)
-	    {
+	for(int line = 0; line < objidx; line++) {
+	    for(int type = 0; type < 3; type++) {
 		strtok(objs[line][type], "\n");
-		if (line % 2 == 0)
-		{
+		if(line % 2 == 0) {
 		    printf("%s%s%-25s", "\033[47m", "\033[30m", objs[line][type]);
 		}
-		else
-		{
+		else {
 		    printf("%s%s%-25s", "\033[40m", "\033[37m", objs[line][type]);
 		}
 	    }
 	    printf("%s\n", "\033[0m");
 	}
-	return(0);
+	success();
     }
 
     //Load
-    if (strcmp(argv[1],"-l") == 0)
-    {
+    if(strcmp(argv[1],"-l") == 0) {
 	if(argc != 5)
 	    argerr();
 
@@ -119,27 +140,24 @@ int main(int argc, char *argv[])
 	strcat(newobj, ",");
 	strcat(newobj, argv[4]);
 	strcat(newobj, "\n");
-	FILE* objfile = fopen("objects.csv", "a");
+	FILE* objfile = fopen(objname, "a");
 	fprintf(objfile, "%s", newobj);
-	printf("Created new object: %s", newobj);
-
+	
+	fclose(objfile);
 	free(newobj);
+	success();
     }
 
     //Unload
-    else if (strcmp(argv[1],"-u") == 0)
-    {
+    else if(strcmp(argv[1],"-u") == 0) {
 	if(argc != 3)
 	    argerr();
 
-	FILE* fileread = fopen("objects.csv", "r");
+	FILE* fileread = fopen(objname, "r");
 	char* line = NULL;
 	size_t len = 0;
 	ssize_t read;
 	int match = 0;
-
-	if (fileread == NULL)
-	    fileerr();
 	
 	char* delobj;
 
@@ -160,16 +178,13 @@ int main(int argc, char *argv[])
 	if(!match)
 	    objerr();
 	
-
-	FILE* tmpfilewrite = fopen("tmpobjects.csv", "w");
+	FILE* tmpfilewrite = fopen(tmpname, "w");
 	
 	while((read = getline(&line, &len, fileread)) != -1) {
 	    char* linecheck = malloc(strlen(line) - 1);
 	    strcpy(linecheck, line);
 	    strtok(linecheck, "\n");
-	    if(strcmp(linecheck, delobj) == 0) {
-		printf("Match for: %s, line: %s\n", delobj, linecheck);
-	    }
+	    if(strcmp(linecheck, delobj) == 0) {}
 	    else {
 		fprintf(tmpfilewrite, "%s", line);
 	    }
@@ -178,83 +193,47 @@ int main(int argc, char *argv[])
 	free(delobj);
 	fclose(tmpfilewrite);
 	fclose(fileread);
-	FILE* tmpfileread = fopen("tmpobjects.csv", "r");
-	FILE* filewrite = fopen("objects.csv", "w");
+	FILE* tmpfileread = fopen(tmpname, "r");
+	FILE* filewrite = fopen(objname, "w");
 	char ch;
-	while ((ch = fgetc(tmpfileread)) != EOF)
+
+	while((ch = fgetc(tmpfileread)) != EOF)
 	    fputc(ch, filewrite);
 
 	fclose(filewrite);
 	fclose(tmpfileread);
-	remove("tmpobjects.csv");
+	remove(tmpname);
 	
-	if (line)
+	if(line)
 	    free(line);
-    }
 
-    //Dir
-    else if (strcmp(argv[1],"-d") == 0)
-    {
-	if (argc != 3 || (strcmp(argv[2], "pull") != 0 && strcmp(argv[2], "push") != 0))
-	    argerr();
-
-	strtok(cdir, "\n");
-
-	//Push
-	if (strcmp(argv[2], "push") == 0)
-	{
-	    printf("Push\n");
-	}
-	
-	//Pull
-	else
-	{
-	    printf("Pull\n");
-	    struct dirent *de;
-  
-	    DIR *dr = opendir(cdir); 
-  
-	    if (dr == NULL)
-		direrr();
-  
-	    while ((de = readdir(dr)) != NULL) 
-		printf("%s\n", de->d_name); 
-  
-	    closedir(dr);
-	    if(strinarr("f", objs[0]))
-		printf("q");
-	}
+	success();
     }
 
     //Edit
-    else if (argc == 2)
-    {
+    else if(argc == 2) {
 	char* editpath = NULL;
-	for (int line = 0; line < objidx; line++)
-	{
+	for(int line = 0; line < objidx; line++) {
 	    strtok(objs[line][2], "\n");
-	    if (strcmp(objs[line][2], argv[1]) == 0)
-	    {
+	    if (strcmp(objs[line][2], argv[1]) == 0) {
 		editpath = objs[line][0];
 	    }
-
 	}
 
-	if (editpath == NULL)
+	if(editpath == NULL)
 	    objerr();
 
 	strtok(ceditor, "\n");
-	char* command = (char *) malloc(2 + strlen(ceditor)+ strlen(editpath) );
+	char* command = malloc(2 + strlen(ceditor) + strlen(editpath));
 	strcpy(command, ceditor);
 	strcat(command, " ");
 	strcat(command, editpath);
-	printf("RUNNING: %s \n", command);
 	system(command);
+
 	free(command);
+	success();
     }
-    else
-    {
+    else {
 	argerr();
     }
-    free(dir);
 }
