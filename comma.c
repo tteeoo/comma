@@ -3,9 +3,8 @@
  * gcc -o comma comma.c csvparser/parsefuncs.c errors/errorfuncs.c -I.
  *
  * TODO:
- * - Remove categories
- * - Toggle color
  * - Help option
+ * - Optimize code
  * - Makefile
  * - AUR
  * - ??????
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
     }
     if(access(objname, F_OK) == -1) {
 	FILE* newobj = fopen(objname, "w");
-	fprintf(newobj, "~/.config/comma/config.csv,comma,c\n");
+	fprintf(newobj, "c,comma config file,~/.config/comma/config.csv\n");
 	fclose(newobj);
     }
 
@@ -94,16 +93,16 @@ int main(int argc, char *argv[]) {
     int objidx = 0;
     while(fgets(objline, 1024, objstream)) {
         char* tmp = strdup(objline);
-	char* path = getfield(tmp, 1);
+	char* nick = getfield(tmp, 1);
 	tmp = strdup(objline);
-	char* cat = getfield(tmp, 2);
+	char* desc = getfield(tmp, 2);
 	tmp = strdup(objline);
-	char* nick = getfield(tmp, 3);
+	char* path = getfield(tmp, 3);
 	tmp = strdup(objline);
 
-	objs[objidx][0] = path;
-	objs[objidx][1] = cat;
-	objs[objidx][2] = nick;
+	objs[objidx][0] = nick;
+	objs[objidx][1] = desc;
+	objs[objidx][2] = path;
 
         free(tmp);
 	objidx++;
@@ -112,15 +111,20 @@ int main(int argc, char *argv[]) {
 
     //List (No arguments specified)
     if(argc == 1) {
-	printf("%-25s%-25s%s", "Path", "Category",  "Nickname\n");
+	printf("%-25s%-25s%s\n", "Nickname", "Description",  "Path");
 	for(int line = 0; line < objidx; line++) {
 	    for(int type = 0; type < 3; type++) {
 		strtok(objs[line][type], "\n");
-		if(line % 2 == 0) {
-		    printf("%s%s%-25s", "\033[47m", "\033[30m", objs[line][type]);
+		if(strcmp(color,"true") == 0) {
+		    if(line % 2 == 0) {
+			printf("%s%s%-25s", "\033[47m", "\033[30m", objs[line][type]);
+		    }
+		    else {
+			printf("%s%s%-25s", "\033[40m", "\033[37m", objs[line][type]);
+		    }
 		}
 		else {
-		    printf("%s%s%-25s", "\033[40m", "\033[37m", objs[line][type]);
+		    printf("%-25s", objs[line][type]);
 		}
 	    }
 	    printf("%s\n", "\033[0m");
@@ -162,8 +166,8 @@ int main(int argc, char *argv[]) {
 	char* delobj;
 
 	for(int i=0; i < objidx; i++) {
-	    strtok(objs[i][2], "\n");
-	    if(strcmp(objs[i][2],argv[2]) == 0) {
+	    strtok(objs[i][0], "\n");
+	    if(strcmp(objs[i][0],argv[2]) == 0) {
 		delobj = malloc(3 + strlen(objs[i][0]) + strlen(objs[i][1]) + strlen(objs[i][2]));
 		strcpy(delobj, objs[i][0]);
 		strcat(delobj, ",");
@@ -214,9 +218,9 @@ int main(int argc, char *argv[]) {
     else if(argc == 2) {
 	char* editpath = NULL;
 	for(int line = 0; line < objidx; line++) {
-	    strtok(objs[line][2], "\n");
-	    if (strcmp(objs[line][2], argv[1]) == 0) {
-		editpath = objs[line][0];
+	    strtok(objs[line][0], "\n");
+	    if(strcmp(objs[line][0], argv[1]) == 0) {
+		editpath = objs[line][2];
 	    }
 	}
 
