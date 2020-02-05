@@ -8,14 +8,17 @@ This project uses <a href="https://cmake.org">CMake</a> which is a little bloat 
 
 # Installation
 
+Install the cmake package, this may vary per your distro.
+
 ```
 git clone https://github.com/tteeoo/comma
 cd comma/build
+cmake ..
 make
 ```
 Then, optionally
 ```
 sudo cp comma /usr/bin/
-cd ..
+cd ../..
 rm -r comma
 ```
