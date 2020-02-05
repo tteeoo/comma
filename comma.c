@@ -111,6 +111,7 @@ int main(int argc, char *argv[]) {
 
     //List (No arguments specified)
     if(argc == 1) {
+	strtok(color, "\n");
 	printf("%-25s%-25s%s\n", "Nickname", "Description",  "Path");
 	for(int line = 0; line < objidx; line++) {
 	    for(int type = 0; type < 3; type++) {
