@@ -17,5 +17,5 @@ Then, optionally
 ```
 sudo cp comma /usr/bin/
 cd ..
-rm comma
+rm -r comma
 ```
