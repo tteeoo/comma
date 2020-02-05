@@ -1,0 +1,1 @@
+/usr/bin/cc   -rdynamic CMakeFiles/comma.dir/src/comma.c.o CMakeFiles/comma.dir/src/errorfuncs.c.o CMakeFiles/comma.dir/src/parsefuncs.c.o  -o comma 

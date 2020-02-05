@@ -1,11 +1,10 @@
 /* COnfiguration Micro MAnager (comma) writen by Theo Henson
  *
- * gcc -o comma comma.c csvparser/parsefuncs.c errors/errorfuncs.c -I.
+ * gcc -o comma src/comma.c src/parsefuncs.c src/errorfuncs.c -I.
  *
  * TODO:
  * - Help option
  * - Optimize code
- * - Makefile
  * - AUR
  * - ??????
  * - Profit
@@ -19,8 +18,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "csvparser/parse.h"
-#include "errors/error.h"
+#include "../include/parse.h"
+#include "../include/error.h"
 
 char* dir;
 char* confname;
