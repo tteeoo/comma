@@ -10,9 +10,11 @@ This project uses <a href="https://cmake.org">CMake</a> which is a little bloat 
 
 Install the cmake package, this may vary per your distro.
 
+Then
 ```
 git clone https://github.com/tteeoo/comma
 cd comma/build
+rm *
 cmake ..
 make
 ```
@@ -22,3 +24,6 @@ sudo cp comma /usr/bin/
 cd ../..
 rm -r comma
 ```
+# License
+
+All files are licensced under the MIT License, this can be found at /LICENSE
