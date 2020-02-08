@@ -9,6 +9,8 @@ all: $(TARGET)
 $(TARGET): $(OBJFILES)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJFILES) $(LDFLAGS)
 
+.PHONY: clean install
+
 clean:
 	rm -f $(OBJFILES) $(TARGET)
 
