@@ -1,3 +1,0 @@
-/home/theo/Repos/comma/build/CMakeFiles/rebuild_cache.dir
-/home/theo/Repos/comma/build/CMakeFiles/comma.dir
-/home/theo/Repos/comma/build/CMakeFiles/edit_cache.dir

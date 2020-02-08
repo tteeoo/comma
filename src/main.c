@@ -1,7 +1,5 @@
 /* COnfiguration Micro MAnager (comma) writen by Theo Henson
  *
- * gcc -o comma src/comma.c src/parsefuncs.c src/errorfuncs.c -I.
- *
  * TODO:
  * - Help option
  * - Optimize code
