@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
     }
 
     //Edit
-    else if(argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) { 
+    else if(argc == 2) { 
 	char* editpath = NULL;
 	for(int line = 0; line < objidx; line++) {
 	    strtok(objs[line][0], "\n");
