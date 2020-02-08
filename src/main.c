@@ -1,7 +1,6 @@
 /* COnfiguration Micro MAnager (comma) writen by Theo Henson
  *
  * TODO:
- * - Help option
  * - Optimize code
  * - AUR
  * - ??????
@@ -131,7 +130,7 @@ int main(int argc, char *argv[]) {
     }
 
     //Load
-    if(strcmp(argv[1],"-l") == 0) {
+    if(strcmp(argv[1], "-l") == 0 || strcmp(argv[1], "--load") == 0) {
 	if(argc != 5)
 	    argerr();
 
@@ -151,7 +150,7 @@ int main(int argc, char *argv[]) {
     }
 
     //Unload
-    else if(strcmp(argv[1],"-u") == 0) {
+    else if(strcmp(argv[1], "-u") == 0 || strcmp(argv[1], "--unload") == 0) {
 	if(argc != 3)
 	    argerr();
 
@@ -212,8 +211,13 @@ int main(int argc, char *argv[]) {
 	success();
     }
 
+    //Help
+    else if(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
+	printf("Usage:\n	comma [<-l | --load> <nickname> <description> <filepath>] | [<-u | --unload> <nickname>] | [<-h | --help>] | [nickname]\nOptions:\n	-l --load: Loads an object with specified nickname desc. and path\n\n	-u --unload: Unloads an object with specified nickname\n\n 	-h --help: Displays this message\n\nWithout any options comma will list all of your tracked configuration files (objects)\nProviding the nickname of a loaded object as the only argument will open the file in your specified editor\n");
+    }
+
     //Edit
-    else if(argc == 2) {
+    else if(argc == 2 && (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0)) { 
 	char* editpath = NULL;
 	for(int line = 0; line < objidx; line++) {
 	    strtok(objs[line][0], "\n");

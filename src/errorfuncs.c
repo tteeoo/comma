@@ -4,6 +4,7 @@
 
 void argerr() {
     fprintf(stderr, "ERROR: Invalid arguments\n");
+    printf("Usage:\n	comma [<-l | --load> <nickname> <description> <filepath>] | [<-u | --unload> <nickname>] | [<-h | --help>] | [nickname]\n");
     free(dir);
     free(confname);
     free(objname);
