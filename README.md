@@ -20,21 +20,21 @@ Then, optionally
 
 Comma is a very basic program and has four main functions:
 
-Listing - comma will list out all tracked files when it has no arguments
+*Listing* - comma will list out all tracked files when it has no arguments
 
 `comma`
 
-Loading - comma will start tracking a given file, giving it a description and a nickname to easily edit it with
+*Loading* - comma will start tracking a given file, giving it a description and a nickname to easily edit it with
 
 `comma -l nickname "brief description" /path/to/file`
 
 
-Editing - comma will attempt to open the file with the given nickname in your editor of choice, specified in its config.csv file
+*Editing* - comma will attempt to open the file with the given nickname in your editor of choice, specified in its config.csv file
 
 `comma nickname`
 
 
-Unloading - comma will stop tracking a file with a specified nickname
+*Unloading* - comma will stop tracking a file with a specified nickname
 
 `comma -u nickname`
 
