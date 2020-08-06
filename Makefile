@@ -15,4 +15,4 @@ clean:
 	rm -f $(OBJFILES) $(TARGET)
 
 install:
-	cp comma /usr/bin/
+	cp comma /usr/local/bin/
