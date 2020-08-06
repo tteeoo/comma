@@ -12,7 +12,7 @@ int linecount(char *file) {
 
 	for(c = getc(fp); c != EOF; c = getc(fp)) 
 		if(c == '\n')
-			count = count + 1;
+			count++;
 
 	fclose(fp);
 	return count;

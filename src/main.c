@@ -12,20 +12,10 @@
 
 #include "../inc/parse.h"
 
-char *dir;
-char *confname;
 char *objname;
-char *tmpname;
-
-void cleanup() {
-	free(dir);
-	free(confname);
-	free(objname);
-	free(tmpname);
-}
 
 void err(char *name) {
-	cleanup();
+	free(objname);
 	fprintf(stderr, "comma: error: %s\n", name);
 	exit(1);
 }
@@ -33,11 +23,14 @@ void err(char *name) {
 int main(int argc, char *argv[]) {
 
 	// Initialize dir variable and file names
-	dir = malloc(sizeof(getenv("HOME")) + 17);
+	char *dir = malloc(sizeof(getenv("HOME")) + 17);
+	char *home = getenv("HOME");
+	if (!home)
+		err("HOME environment variable not set");
 	strcpy(dir, getenv("HOME"));
 	strcat(dir, "/.config/comma/");
 
-	confname = malloc(sizeof(dir) + 20);
+	char *confname = malloc(sizeof(dir) + 20);
 	strcpy(confname, dir);
 	strcat(confname, "config.csv");
 
@@ -45,15 +38,13 @@ int main(int argc, char *argv[]) {
 	strcpy(objname, dir);
 	strcat(objname, "objects.csv");
 
-	tmpname = malloc(23);
-	strcpy(tmpname, "/tmp/comma_objects.csv");
-
 	// Check if files exist and handle if not
 	DIR *checkdir = opendir(dir);
 	if (!checkdir) {
 		mkdir(dir, 0700);
 		closedir(checkdir);
 	}
+	free(dir);
 	if (access(confname, F_OK) == -1) {
 		FILE *newconf = fopen(confname, "w");
 		fprintf(newconf, "editor,vi\ncolor,true\n");
@@ -68,6 +59,7 @@ int main(int argc, char *argv[]) {
 
 	// Read config file
 	FILE *constream = fopen(confname, "r");
+	free(confname);
 	char conline[1024];
 	char *ceditor;
 	char *color;
@@ -130,7 +122,7 @@ int main(int argc, char *argv[]) {
 			}
 			printf("%s\n", "\033[0m");
 		}
-		cleanup();
+		free(objname);
 		return 0;
 	}
 
@@ -151,7 +143,7 @@ int main(int argc, char *argv[]) {
 		
 		fclose(objfile);
 		free(newobj);
-		cleanup();
+		free(objname);
 		return 0;
 	}
 
@@ -185,6 +177,9 @@ int main(int argc, char *argv[]) {
 		if (!match)
 			err("object not loaded");
 	
+		char *tmpname = malloc(23);
+		strcpy(tmpname, "/tmp/comma_objects.csv");
+
 		FILE *tmpfilewrite = fopen(tmpname, "w");
 	
 		while ((read = getline(&line, &len, fileread)) != -1) {
@@ -208,11 +203,12 @@ int main(int argc, char *argv[]) {
 		fclose(filewrite);
 		fclose(tmpfileread);
 		remove(tmpname);
+		free(tmpname);
 	
 		if(line )
 			free(line);
 
-		cleanup();
+		free(objname);
 		return 0;
 	}
 
@@ -242,12 +238,12 @@ int main(int argc, char *argv[]) {
 		system(command);
 
 		free(command);
-		cleanup();
+		free(objname);
 		return 0;
 	} else {
 		err("invalid arguments");
 	}
 
-	cleanup();
+	free(objname);
 	return 0;
 }
