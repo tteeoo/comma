@@ -1,0 +1,41 @@
+comma
+=====
+
+a niche tool for managing configuration files--specifically geared towards minimal linux installations
+
+building
+========
+
+$ make
+# make install
+
+usage
+=====
+
+listing - list all tracked files:
+$ comma
+
+loading - start tracking a given file:
+$ comma -l nickname "brief description" /path/to/file
+
+editing - attempt to open the file with the given nickname:
+$ comma <nickname>
+
+unloading - stop tracking a file with a specified nickname:
+$ comma -u nickname
+
+configuration
+=============
+
+the config file is located at ~/.config/comma/config.csv
+
+a new file will be created if none exists
+
+you can change:
+- the editor files are opened in
+- wether or not files are listed in alternating colors
+
+license
+=======
+
+all files are licensced under the MIT license
