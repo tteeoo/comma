@@ -1,6 +1,6 @@
 CC	= gcc
 CFLAGS	= -Wall -I.
-OBJFILES	= src/main.o src/errorfuncs.o src/parsefuncs.o
+OBJFILES	= src/main.o src/parsefuncs.o
 TARGET	= comma
 
 all: $(TARGET)

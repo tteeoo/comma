@@ -11,12 +11,24 @@
 #include <sys/types.h>
 
 #include "../inc/parse.h"
-#include "../inc/error.h"
 
 char *dir;
 char *confname;
 char *objname;
 char *tmpname;
+
+void cleanup() {
+	free(dir);
+	free(confname);
+	free(objname);
+	free(tmpname);
+}
+
+void err(char *name) {
+	cleanup();
+	fprintf(stderr, "comma: error: %s\n", name);
+	exit(1);
+}
 
 int main(int argc, char *argv[]) {
 
@@ -118,13 +130,14 @@ int main(int argc, char *argv[]) {
 			}
 			printf("%s\n", "\033[0m");
 		}
-		success();
+		cleanup();
+		return 0;
 	}
 
 	// Load
 	if (strcmp(argv[1], "-l") == 0 || strcmp(argv[1], "--load") == 0) {
 		if(argc != 5)
-			argerr();
+			err("invalid arguments");
 
 		char *newobj = malloc(22 + strlen(argv[2]) + strlen(argv[3]) + strlen(argv[4]));
 		strcpy(newobj, argv[2]);
@@ -138,13 +151,14 @@ int main(int argc, char *argv[]) {
 		
 		fclose(objfile);
 		free(newobj);
-		success();
+		cleanup();
+		return 0;
 	}
 
 	// Unload
 	else if (strcmp(argv[1], "-u") == 0 || strcmp(argv[1], "--unload") == 0) {
 		if (argc != 3)
-			argerr();
+			err("invalid arguments");
 
 		FILE *fileread = fopen(objname, "r");
 		char *line = NULL;
@@ -169,7 +183,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (!match)
-			objerr();
+			err("object not loaded");
 	
 		FILE *tmpfilewrite = fopen(tmpname, "w");
 	
@@ -198,7 +212,8 @@ int main(int argc, char *argv[]) {
 		if(line )
 			free(line);
 
-		success();
+		cleanup();
+		return 0;
 	}
 
 	// Help
@@ -217,7 +232,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (editpath == NULL)
-			objerr();
+			err("object not loaded");
 
 		strtok(ceditor, "\n");
 		char *command = malloc(2 + strlen(ceditor) + strlen(editpath));
@@ -227,10 +242,12 @@ int main(int argc, char *argv[]) {
 		system(command);
 
 		free(command);
-		success();
+		cleanup();
+		return 0;
 	} else {
-		argerr();
+		err("invalid arguments");
 	}
 
+	cleanup();
 	return 0;
 }
