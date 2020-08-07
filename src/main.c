@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
 
 	// Version
 	else if (strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0) {
-		printf("comma: version: 0.1.2\n");
+		printf("comma: version: 0.4\n");
 	}
 
 	// Edit
