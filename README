@@ -3,11 +3,13 @@ comma
 
 a niche tool for managing configuration files--specifically geared towards minimal linux installations
 
+
 building
 ========
 
 $ make
 # make install
+
 
 usage
 =====
@@ -24,6 +26,7 @@ $ comma <nickname>
 unloading - stop tracking a file with a specified nickname:
 $ comma -u <nickname>
 
+
 configuration
 =============
 
@@ -34,6 +37,7 @@ a new file will be created if none exists
 you can change:
 - the editor files are opened in
 - wether or not files are listed in alternating colors
+
 
 license
 =======
