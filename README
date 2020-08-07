@@ -16,18 +16,18 @@ listing - list all tracked files:
 $ comma
 
 loading - start tracking a given file:
-$ comma -l nickname "brief description" /path/to/file
+$ comma -l <nickname> </path/to/file> <description>
 
 editing - attempt to open the file with the given nickname:
 $ comma <nickname>
 
 unloading - stop tracking a file with a specified nickname:
-$ comma -u nickname
+$ comma -u <nickname>
 
 configuration
 =============
 
-the config file is located at ~/.config/comma/config.csv
+the config file is located at $HOME/.config/comma/config.csv
 
 a new file will be created if none exists
 

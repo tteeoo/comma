@@ -28,15 +28,15 @@ int main(int argc, char *argv[]) {
 	if (!home)
 		err("HOME environment variable not set");
 	strcpy(dir, getenv("HOME"));
-	strcat(dir, "/.config/comma/");
+	strcat(dir, "/.config/comma");
 
 	char *confname = malloc(sizeof(dir) + 20);
 	strcpy(confname, dir);
-	strcat(confname, "config.csv");
+	strcat(confname, "/config.csv");
 
 	objname = malloc(sizeof(dir) + 20);
 	strcpy(objname, dir);
-	strcat(objname, "objects.csv");
+	strcat(objname, "/objects.csv");
 
 	// Check if files exist and handle if not
 	DIR *checkdir = opendir(dir);
@@ -45,24 +45,34 @@ int main(int argc, char *argv[]) {
 		closedir(checkdir);
 	}
 	free(dir);
+	char *editor = getenv("EDITOR");
+	if (!editor)
+		editor = "/bin/vi";
 	if (access(confname, F_OK) == -1) {
 		FILE *newconf = fopen(confname, "w");
-		fprintf(newconf, "editor,vi\ncolor,true\n");
+		if (!newconf)
+			err("could not open file");
+		fprintf(newconf, "editor,%s\ncolor,true\n", editor);
 		fclose(newconf);
-		printf("comma: no config file detected, created new one (%s)\ncomma: the default editor is currently vi, edit the config file to change it\n", confname);
+		printf("comma: created config file at %s, the current editor is %s\n", confname, editor);
 	}
 	if (access(objname, F_OK) == -1) {
 		FILE *newobj = fopen(objname, "w");
-		fprintf(newobj, "c,comma config file,~/.config/comma/config.csv\n");
+		if (!newobj)
+			err("could not open file");
+		fprintf(newobj, "c,%s,comma config file\n", confname);
 		fclose(newobj);
+		printf("comma: object file at %s, preloaded with configuration file\n", objname);
 	}
 
 	// Read config file
 	FILE *constream = fopen(confname, "r");
+	if (!constream)
+		err("could not open file");
 	free(confname);
 	char conline[1024];
 	char *ceditor;
-	char *color;
+	int color = 0;
 
 	while (fgets(conline, 1024, constream)) {
 		char *tmp = strdup(conline);
@@ -73,8 +83,11 @@ int main(int argc, char *argv[]) {
 
 		if (!strcmp(prop, "editor"))
 			ceditor = val;
-		if (!strcmp(prop, "color"))
-			color = val;
+		if (!strcmp(prop, "color")) {
+			strtok(val, "\n");
+			if (strcmp(val,"true") == 0)
+				color = 1;
+		}
 
 		free(tmp);
 	}
@@ -82,6 +95,8 @@ int main(int argc, char *argv[]) {
 
 	// Read object file
 	FILE *objstream = fopen(objname, "r");
+	if (!objstream)
+		err("could not open file");
 	char *objs[linecount(objname)][3];
 	char objline[1024];
 	int objidx = 0;
@@ -89,14 +104,14 @@ int main(int argc, char *argv[]) {
 		char *tmp = strdup(objline);
 		char *nick = getfield(tmp, 1);
 		tmp = strdup(objline);
-		char *desc = getfield(tmp, 2);
+		char *path = getfield(tmp, 2);
 		tmp = strdup(objline);
-		char *path = getfield(tmp, 3);
+		char *desc = getfield(tmp, 3);
 		tmp = strdup(objline);
 
 		objs[objidx][0] = nick;
-		objs[objidx][1] = desc;
-		objs[objidx][2] = path;
+		objs[objidx][1] = path;
+		objs[objidx][2] = desc;
 
 		free(tmp);
 		objidx++;
@@ -105,22 +120,24 @@ int main(int argc, char *argv[]) {
 
 	// List (No arguments specified)
 	if (argc == 1) {
-		strtok(color, "\n");
-		printf("%-25s%-25s%s\n", "nickname", "description",  "path");
+		printf("%s\t%s\t%s\t\n", "nickname", "path",  "description");
 		for (int line = 0; line < objidx; line++) {
 			for (int type = 0; type < 3; type++) {
 				strtok(objs[line][type], "\n");
-				if(strcmp(color,"true") == 0) {
-					if(line % 2 == 0) {
-						printf("%s%s%-25s", "\033[47m", "\033[30m", objs[line][type]);
+				if (color) {
+					if (line % 2 == 0) {
+						printf("\033[47;30m");
 					} else {
-						printf("%s%s%-25s", "\033[40m", "\033[37m", objs[line][type]);
+						printf("\033[40;37m");
 					}
+					printf("%s\t", objs[line][type]);
 				} else {
-					printf("%-25s", objs[line][type]);
+					printf("%s\t", objs[line][type]);
 				}
 			}
-			printf("%s\n", "\033[0m");
+			if (color)
+				printf("\033[0m");
+			printf("\n");
 		}
 		free(objname);
 		return 0;
@@ -139,6 +156,8 @@ int main(int argc, char *argv[]) {
 		strcat(newobj, argv[4]);
 		strcat(newobj, "\n");
 		FILE *objfile = fopen(objname, "a");
+		if (!objfile)
+			err("could not open file");
 		fprintf(objfile, "%s", newobj);
 		
 		fclose(objfile);
@@ -153,9 +172,10 @@ int main(int argc, char *argv[]) {
 			err("invalid arguments");
 
 		FILE *fileread = fopen(objname, "r");
+		if (!fileread)
+			err("could not open file");
 		char *line = NULL;
 		size_t len = 0;
-		ssize_t read;
 		int match = 0;
 		
 		char *delobj;
@@ -181,8 +201,10 @@ int main(int argc, char *argv[]) {
 		strcpy(tmpname, "/tmp/comma_objects.csv");
 
 		FILE *tmpfilewrite = fopen(tmpname, "w");
+		if (!tmpfilewrite)
+			err("could not open file");
 	
-		while ((read = getline(&line, &len, fileread)) != -1) {
+		while (getline(&line, &len, fileread) != -1) {
 			char *linecheck = malloc(strlen(line) - 1);
 			strcpy(linecheck, line);
 			strtok(linecheck, "\n");
@@ -194,7 +216,11 @@ int main(int argc, char *argv[]) {
 		fclose(tmpfilewrite);
 		fclose(fileread);
 		FILE *tmpfileread = fopen(tmpname, "r");
+		if (!tmpfileread)
+			err("could not open file");
 		FILE *filewrite = fopen(objname, "w");
+		if (!filewrite)
+			err("could not open file");
 		char ch;
 
 		while ((ch = fgetc(tmpfileread)) != EOF)
@@ -214,7 +240,12 @@ int main(int argc, char *argv[]) {
 
 	// Help
 	else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-		printf("comma: usage:\n\tcomma [<-l | --load> <nickname> <description> <filepath>] | [<-u | --unload> <nickname>] | [<-h | --help>] | [nickname]\noptions:\n\t-l, --load: loads an object with specified nickname, description, and path\n\n\t-u, --unload: unloads an object with specified nickname\n\n\t-h --help: displays this message\n\nwithout any options comma will list all of your tracked configuration files (objects)\nproviding the nickname of a loaded object as the only argument will open the file in your specified editor\n");
+		printf("comma: usage:\n\tcomma [-l <nickname> <path> <description>] | [-u <nickname>] | [-h | -V] | [nickname]\noptions:\n\t-l, --load: loads an object with specified nickname, path, and description\n\n\t-u, --unload: unloads an object with specified nickname\n\n\t-h --help: prints this message and exits\n\n\t-V, --version: prints version information and exits\n\nwithout any options comma will list all of your tracked configuration files (objects)\nproviding the nickname of a loaded object as the only argument will open the file in your specified editor\n");
+	}
+
+	// Version
+	else if (strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0) {
+		printf("comma: version: 0.1.2\n");
 	}
 
 	// Edit
@@ -223,11 +254,11 @@ int main(int argc, char *argv[]) {
 		for(int line = 0; line < objidx; line++) {
 			strtok(objs[line][0], "\n");
 			if(strcmp(objs[line][0], argv[1]) == 0) {
-				editpath = objs[line][2];
+				editpath = objs[line][1];
 			}
 		}
 
-		if (editpath == NULL)
+		if (!editpath)
 			err("object not loaded");
 
 		strtok(ceditor, "\n");
