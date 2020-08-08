@@ -1,6 +1,8 @@
-// COnfiguration Micro MAnager (comma) writen by Theo Henson
 //
+// COnfiguration Micro MAnager (comma) writen by Theo Henson
 // MIT License
+// https://github.com/tteeoo/comma
+//
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]) {
 		FILE *newconf = fopen(confname, "w");
 		if (!newconf)
 			err("could not open file");
-		fprintf(newconf, "editor,%s\ncolor,true\n", editor);
+		fprintf(newconf, "editor,%s\ncolor,auto\n", editor);
 		fclose(newconf);
 		printf("comma: created config file at %s, the current editor is %s\n", confname, editor);
 	}
@@ -62,7 +64,7 @@ int main(int argc, char *argv[]) {
 			err("could not open file");
 		fprintf(newobj, "c,%s,comma config file\n", confname);
 		fclose(newobj);
-		printf("comma: object file at %s, preloaded with configuration file\n", objname);
+		printf("comma: created object file at %s, preloaded with configuration file\n", objname);
 	}
 
 	// Read config file
@@ -85,8 +87,11 @@ int main(int argc, char *argv[]) {
 			ceditor = val;
 		if (!strcmp(prop, "color")) {
 			strtok(val, "\n");
-			if (strcmp(val,"true") == 0)
+			if (strcmp(val,"always") == 0) {
 				color = 1;
+			} else if (strcmp(val, "auto") == 0 && isatty(fileno(stdout))) {
+				color = 1;
+			}
 		}
 
 		free(tmp);
@@ -130,10 +135,8 @@ int main(int argc, char *argv[]) {
 					} else {
 						printf("\033[40;37m");
 					}
-					printf("%s\t", objs[line][type]);
-				} else {
-					printf("%s\t", objs[line][type]);
 				}
+				printf("%s\t", objs[line][type]);
 			}
 			if (color)
 				printf("\033[0m");
@@ -240,12 +243,19 @@ int main(int argc, char *argv[]) {
 
 	// Help
 	else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-		printf("comma: usage:\n\tcomma [-l <nickname> <path> <description>] | [-u <nickname>] | [-h | -V] | [nickname]\noptions:\n\t-l, --load: loads an object with specified nickname, path, and description\n\n\t-u, --unload: unloads an object with specified nickname\n\n\t-h --help: prints this message and exits\n\n\t-V, --version: prints version information and exits\n\nwithout any options comma will list all of your tracked configuration files (objects)\nproviding the nickname of a loaded object as the only argument will open the file in your specified editor\n");
+		printf("usage: comma [-l <nickname> <path> <description>]\n             [-u <nickname>]\n             [nickname]\n             [-h | -V]\n\n"
+			"options:\n     -l, --load        loads an object with specified nickname, path, and description\n"
+			"     -u, --unload      unloads an object with specified nickname\n"
+			"     -h, --help        prints this message and exits\n"
+			"     -V, --version     prints version information and exits\n\n"
+			"without any arguments comma will list all of your tracked configuration files (objects)\n"
+			"providing the nickname of a loaded object as the only argument will open the file in your specified editor\n"
+			"in the configuration file 'color' can be set to 'always', 'auto', or 'never'; with 'auto' color escape codes are only printed if stdout is a terminal\n");
 	}
 
 	// Version
 	else if (strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0) {
-		printf("comma: version: 0.4\n");
+		printf("comma version 0.4\n");
 	}
 
 	// Edit
